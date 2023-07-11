@@ -14,7 +14,6 @@ form.addEventListener('submit', function(event) {
     email: email,
     message: message
   };
-
   // Obtener el array de contactos almacenado en localStorage
   let contacts = JSON.parse(localStorage.getItem('contacts')) || [];
 
