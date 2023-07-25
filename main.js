@@ -1,32 +1,146 @@
+const productos = {
+	1: {
+		nombre: "Remeras",
+		precio: 2000,
+		talla: ["S", "M", "L"],
+		colores: ["rojo", "azul", "verde"]
+	},
+	2: {
+		nombre: "Jeans",
+		precio: 2500,
+		talla: ["S", "M", "L"],
+		colores: ["negro", "gris"]
+	},
+	3: {
+		nombre: "Camperas",
+		precio: 5000,
+		talla: ["36", "37", "38", "39", "40"],
+		colores: ["blanco", "negro"]
+	}
+};
 
-const form = document.getElementById('contact-form');
+let carrito = [];
 
-form.addEventListener('submit', function(event) {
-  event.preventDefault(); // Evitar el envío del formulario
- 
-  const name = document.getElementById('name').value;
-  const email = document.getElementById('email').value;
-  const message = document.getElementById('message').value;
+function mostrarMenuPrendas() {
+	let menu = "Menú de prendas:\n";
 
-  // Creo un objeto con los datos del contacto
-  const contact = {
-    name: name,
-    email: email,
-    message: message
-  };
-  // Obtener el array de contactos almacenado en localStorage
-  let contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+	for (const id in productos) {
+		const producto = productos[id];
+		menu += `${id}. ${producto.nombre} - Precio: $${producto.precio}\n`;
+	}
 
-  // Agrego el nuevo contacto al array
-  contacts.push(contact);
+	menu += "0. Salir";
 
-  // Guardo el array actualizado en localStorage
-  localStorage.setItem('contacts', JSON.stringify(contacts));
+	return parseInt(prompt(menu));
+}
 
-  
-  form.reset();
+function agregarAlCarrito() {
+	const idProducto = mostrarMenuPrendas();
 
-  // mensaje form enviado correctamente
+	if (idProducto === 0) {
+		alert("Gracias por utilizar nuestra tienda en línea. Esperamos que vuelvas!");
+		return;
+	}
 
-  alert('¡Mensaje enviado correctamente!');
-});
+	const cantidad = parseInt(prompt("¿Cuántas unidades deseas agregar al carrito?"));
+
+	let producto = productos[idProducto];
+
+	if (producto) {
+		let item = {
+			id: idProducto,
+			nombre: producto.nombre,
+			precio: producto.precio,
+			cantidad
+		};
+
+		carrito.push(item);
+		actualizarCarrito();
+		alert(`Se agregaron ${cantidad} unidades de ${producto.nombre} al carrito`);
+	} else {
+		alert("El producto no existe");
+	}
+}
+
+function eliminarDelCarrito() {
+	const idProducto = prompt("Ingrese el ID del producto que quieres eliminar del carrito:");
+
+	let index = -1;
+
+	for (let i = 0; i < carrito.length; i++) {
+		if (carrito[i].id === idProducto) {
+			index = i;
+			break;
+		}
+	}
+
+	if (index !== -1) {
+		carrito.splice(index, 1);
+		actualizarCarrito();
+		alert(`Se eliminó el producto con ID ${idProducto} del carrito`);
+	} else {
+		alert("Este producto no está en el carrito");
+	}
+}
+
+function calcularTotalCarrito() {
+	let total = 0;
+
+	for (let i = 0; i < carrito.length; i++) {
+		total += carrito[i].precio * carrito[i].cantidad;
+	}
+
+	alert(`El total de la compra es $${total}`);
+}
+
+function actualizarCarrito() {
+	const carritoLista = document.getElementById("carrito-lista");
+	carritoLista.innerHTML = "";
+
+	for (let i = 0; i < carrito.length; i++) {
+		const item = carrito[i];
+		const li = document.createElement("li");
+		li.textContent = `${item.nombre} - Precio: $${item.precio} - Cantidad: ${item.cantidad}`;
+		carritoLista.appendChild(li);
+	}
+
+	// Guardar el carrito en el almacenamiento local (local storage)
+	localStorage.setItem("carrito", JSON.stringify(carrito));
+}
+
+function mostrarMenu() {
+	let opcion = "";
+
+	while (opcion !== "4") {
+		opcion = prompt(`Seleccione una opción:
+		1. Agregar producto al carrito
+		2. Eliminar producto del carrito
+		3. Calcular total de la compra
+		4. Salir`);
+
+		switch (opcion) {
+			case "1":
+				agregarAlCarrito();
+				break;
+			case "2":
+				eliminarDelCarrito();
+				break;
+			case "3":
+				calcularTotalCarrito();
+				break;
+			case "4":
+				alert("Gracias por comprar en El Cuervo, te esperamos de vuelta");
+				break;
+			default:
+				alert("Opción inválida, selecciona una opción dentro de las indicadas");
+				break;
+		}
+	}
+}
+
+// Recuperar el carrito del almacenamiento local (local storage) al cargar la página
+const carritoLocalStorage = localStorage.getItem("carrito");
+if (carritoLocalStorage) {
+	carrito = JSON.parse(carritoLocalStorage);
+	actualizarCarrito();
+}
